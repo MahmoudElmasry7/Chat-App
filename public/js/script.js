@@ -18,11 +18,6 @@ socket.on("message" , msg=>{
     messagesDiv.scrollTop = messagesDiv.scrollHeight
 })
 
-socket.on("message" , msg=>{
-    showMsg(msg)
-    messagesDiv.scrollTop = messagesDiv.scrollHeight
-})
-
 
 function showMsg(msg){
     const messageList = document.getElementById("messageList")
