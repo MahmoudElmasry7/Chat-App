@@ -2,6 +2,22 @@ const socket = io()
 const chatForm = document.getElementById("messageForm")
 const messagesDiv = document.getElementById("messages")
 
+const username = localStorage.getItem("username")
+const room = localStorage.getItem("room")
+
+if (!username || !room) {
+    window.location.href = "index.html"
+}
+
+socket.on("connect" , ()=>{
+    socket.emit("joinRoom" , { username , room })
+})
+
+socket.on("message" , msg=>{
+    showMsg(msg)
+    messagesDiv.scrollTop = messagesDiv.scrollHeight
+})
+
 socket.on("message" , msg=>{
     showMsg(msg)
     messagesDiv.scrollTop = messagesDiv.scrollHeight
