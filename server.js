@@ -15,13 +15,30 @@ app.use(express.static(path.join(__dirname , "public")))
 
 io.on("connection" , (socket)=>{
 
-  socket.emit("message" , "اهلا وسهلا بيك في الدردشه")
-  socket.broadcast.emit("message" , "مستخدم جديد انضم للدردشه")
-  socket.on("disconnect" , ()=>{
-    io.emit("message" , "مستخدم غادر الدردشه")
+  socket.on("joinRoom" , ({ username , room } = {})=>{
+
+    if (typeof username !== "string" || typeof room !== "string") return
+    if (!username.trim() || !room.trim() || username.length > 30) return
+
+    socket.join(room)
+
+    socket.data.username = username
+    socket.data.room = room
+
+    socket.emit("message" , "اهلا وسهلا بيك في الدردشه")
+    socket.to(room).emit("message" , `${username} انضم للدردشه`)
   })
+
   socket.on("chatMessage" , (msg)=>{
-    io.emit("message" , msg)
+    const { room } = socket.data           
+    if (!room) return                       
+    io.to(room).emit("message" , msg)       
+  })
+
+  socket.on("disconnect" , ()=>{
+    const { room , username } = socket.data
+    if (!room) return
+    io.to(room).emit("message" , `${username} غادر الدردشه`)  
   })
 
 })
