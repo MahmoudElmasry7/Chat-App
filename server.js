@@ -10,6 +10,11 @@ const __dirname = path.dirname(__filename);
 const server = http.createServer(app)
 const io = new Server(server)
 const port = 3000
+const BOT_NAME = "النظام"
+
+function formatMessage(username, text) {
+  return { username, text, time: Date.now() }
+}
 
 app.use(express.static(path.join(__dirname , "public")))
 
@@ -25,14 +30,18 @@ io.on("connection" , (socket)=>{
     socket.data.username = username
     socket.data.room = room
 
-    socket.emit("message" , "اهلا وسهلا بيك في الدردشه")
-    socket.to(room).emit("message" , `${username} انضم للدردشه`)
+    socket.emit("message" , formatMessage(BOT_NAME , "اهلا وسهلا بيك في الدردشه"))
+    socket.to(room).emit("message" , formatMessage(BOT_NAME , `${username} انضم للدردشه`))
   })
 
   socket.on("chatMessage" , (msg)=>{
-    const { room } = socket.data           
-    if (!room) return                       
-    io.to(room).emit("message" , msg)       
+    const { room , username} = socket.data           
+    if (!room) return                 
+    if (typeof msg !== "string") return
+    const text = msg.trim()
+    if (!text || text.length > 500) return
+      
+    io.to(room).emit("message" ,formatMessage(username , text))       
   })
 
   socket.on("disconnect" , ()=>{
