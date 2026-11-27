@@ -9,6 +9,7 @@ import http from 'http'
 import {Server} from 'socket.io'
 import 'dotenv/config'
 import mongoose from 'mongoose'
+import Message from './model/message_schema.js'
 
 const app = express()
 const __filename = fileURLToPath(import.meta.url);
@@ -44,12 +45,28 @@ io.on("connection" , (socket)=>{
     socket.data.username = username
     socket.data.room = room
 
+  try {
+      const history = await Message.find({ room })
+        .sort({ createdAt: -1 })
+        .limit(50)
+        .lean()
+
+      socket.emit("history" , history.reverse().map(m => ({
+        username: m.username,
+        text: m.text,
+        time: m.createdAt.getTime()
+      })))
+    } 
+ catch (err) {
+      console.error("Failed to load history:" , err.message)
+    }
+
     socket.emit("message" , formatMessage(BOT_NAME , "اهلا وسهلا بيك في الدردشه"))
     socket.to(room).emit("message" , formatMessage(BOT_NAME , `${username} انضم للدردشه`))
     await sendRoomUsers(room)
   })
 
-  socket.on("chatMessage" , (msg)=>{
+  socket.on("chatMessage" , async(msg)=>{
     const { room , username} = socket.data           
     if (!room) return                 
     if (typeof msg !== "string") return
@@ -57,6 +74,14 @@ io.on("connection" , (socket)=>{
     if (!text || text.length > 500) return
       
     io.to(room).emit("message" ,formatMessage(username , text))       
+   
+     try {
+      await Message.create({ room , username , text })
+         } 
+     catch (err) {
+      console.error("Failed to save message:" , err.message)
+    }
+  
   })
 
   socket.on("disconnect" , async()=>{
