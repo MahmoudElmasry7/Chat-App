@@ -18,9 +18,17 @@ function formatMessage(username, text) {
 
 app.use(express.static(path.join(__dirname , "public")))
 
+
+async function sendRoomUsers(room) {
+  const sockets = await io.in(room).fetchSockets()
+  const users = sockets.map(s => s.data.username)
+  io.to(room).emit("roomUsers" , users)
+}
+
+
 io.on("connection" , (socket)=>{
 
-  socket.on("joinRoom" , ({ username , room } = {})=>{
+  socket.on("joinRoom" , async({ username , room } = {})=>{
 
     if (typeof username !== "string" || typeof room !== "string") return
     if (!username.trim() || !room.trim() || username.length > 30) return
@@ -32,6 +40,7 @@ io.on("connection" , (socket)=>{
 
     socket.emit("message" , formatMessage(BOT_NAME , "اهلا وسهلا بيك في الدردشه"))
     socket.to(room).emit("message" , formatMessage(BOT_NAME , `${username} انضم للدردشه`))
+    await sendRoomUsers(room)
   })
 
   socket.on("chatMessage" , (msg)=>{
@@ -44,10 +53,11 @@ io.on("connection" , (socket)=>{
     io.to(room).emit("message" ,formatMessage(username , text))       
   })
 
-  socket.on("disconnect" , ()=>{
+  socket.on("disconnect" , async()=>{
     const { room , username } = socket.data
     if (!room) return
     io.to(room).emit("message" , formatMessage(BOT_NAME , `${username} غادر الدردشه`))  
+    await sendRoomUsers(room)
   })
 
 })
