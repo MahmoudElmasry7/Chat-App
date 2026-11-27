@@ -28,6 +28,10 @@ socket.on("roomUsers" , users=>{
     })
 })
 
+socket.on("history" , messages=>{
+    messages.forEach(showMsg)      // نفس دالة العرض، فيها textContent وآمنة
+    messagesDiv.scrollTop = messagesDiv.scrollHeight
+})
 
 function showMsg(message){
     const messageList = document.getElementById("messageList")
