@@ -47,7 +47,7 @@ io.on("connection" , (socket)=>{
   socket.on("disconnect" , ()=>{
     const { room , username } = socket.data
     if (!room) return
-    io.to(room).emit("message" , `${username} غادر الدردشه`)  
+    io.to(room).emit("message" , formatMessage(BOT_NAME , `${username} غادر الدردشه`))  
   })
 
 })
