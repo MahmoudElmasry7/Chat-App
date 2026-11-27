@@ -1,8 +1,14 @@
+import dns from "node:dns";
+// إجبار Node على استخدام DNS Servers محددة
+dns.setServers(["1.1.1.1", "8.8.8.8"]);
+
 import express from 'express'
 import path from 'path'
 import { fileURLToPath } from 'node:url'
 import http from 'http'
 import {Server} from 'socket.io'
+import 'dotenv/config'
+import mongoose from 'mongoose'
 
 const app = express()
 const __filename = fileURLToPath(import.meta.url);
@@ -60,6 +66,18 @@ io.on("connection" , (socket)=>{
     await sendRoomUsers(room)
   })
 
+})
+
+mongoose.connect(process.env.MONGO_URL)
+
+const db = mongoose.connection
+
+db.on('error' , (err)=>{
+    console.log("connection error:" , err.message)
+})
+
+db.once('open' , ()=>{
+    console.log("connection to db!")
 })
 
 server.listen(port , ()=>{
