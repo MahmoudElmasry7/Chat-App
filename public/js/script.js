@@ -22,11 +22,26 @@ socket.on("message" , message=>{
 function showMsg(message){
     const messageList = document.getElementById("messageList")
     const time = new Date(message.time).toLocaleTimeString("ar-EG" , { hour: "2-digit" , minute: "2-digit" })
-    const htmlMsg = `<div class="message">
-                        <p class="username">${message.username} <span class="timestamp">${time}</span></p>
-                        <p class="message-text">${message.text}</p>
-                    </div>`
-            messageList.insertAdjacentHTML("beforeend" , htmlMsg)
+
+    // نبني العناصر واحد واحد بدل ما نبني string فيها HTML
+    const div = document.createElement("div")
+    div.className = "message"
+
+    const header = document.createElement("p")
+    header.className = "username"
+    header.textContent = message.username + " "     // textContent: نص بس، مش HTML
+
+    const timestamp = document.createElement("span")
+    timestamp.className = "timestamp"
+    timestamp.textContent = time
+    header.appendChild(timestamp)
+
+    const text = document.createElement("p")
+    text.className = "message-text"
+    text.textContent = message.text                  // هنا بيتأمن نص الرسالة
+
+    div.append(header , text)
+    messageList.appendChild(div)
 }
 
 chatForm.addEventListener("submit" , (event)=>{
