@@ -13,17 +13,18 @@ socket.on("connect" , ()=>{
     socket.emit("joinRoom" , { username , room })
 })
 
-socket.on("message" , msg=>{
-    showMsg(msg)
+socket.on("message" , message=>{
+    showMsg(message)
     messagesDiv.scrollTop = messagesDiv.scrollHeight
 })
 
 
-function showMsg(msg){
+function showMsg(message){
     const messageList = document.getElementById("messageList")
+    const time = new Date(message.time).toLocaleTimeString("ar-EG" , { hour: "2-digit" , minute: "2-digit" })
     const htmlMsg = `<div class="message">
-                        <p class="username"> الرد الالي<span class="timestamp">10:30 AM</span></p>
-                        <p class="message-text">${msg}</p>
+                        <p class="username">${message.username} <span class="timestamp">${time}</span></p>
+                        <p class="message-text">${message.text}</p>
                     </div>`
             messageList.insertAdjacentHTML("beforeend" , htmlMsg)
 }
