@@ -18,6 +18,16 @@ socket.on("message" , message=>{
     messagesDiv.scrollTop = messagesDiv.scrollHeight
 })
 
+socket.on("roomUsers" , users=>{
+    const list = document.getElementById("userListItems")
+    list.replaceChildren()
+    users.forEach(name=>{
+        const li = document.createElement("li")
+        li.textContent = name   
+        list.appendChild(li)
+    })
+})
+
 
 function showMsg(message){
     const messageList = document.getElementById("messageList")
